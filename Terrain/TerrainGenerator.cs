@@ -4,6 +4,12 @@ using System.Collections;
 public class TerrainGenerator : MonoBehaviour {
 	
 	public Texture[] textures;
+	public GameObject[] trees;
+
+	[Range(0,100)]
+	public int minTree;
+	[Range(0,100)]
+	public int maxTree;
 
 	public Texture2D baseTexture;
 	public Texture2D hMap;
@@ -15,6 +21,9 @@ public class TerrainGenerator : MonoBehaviour {
 
 	private TerrainData tData;
 	private Texture2D hMapTmp;
+
+	private TreeInstance[] treeInstances;
+
 	private bool inCreation;
 	private bool canAddTexture;
 
@@ -24,6 +33,7 @@ public class TerrainGenerator : MonoBehaviour {
 	private const int offset = 3;
 	
 	void Start () {
+
 		tData = this.GetComponent<Terrain>().terrainData;
 		hMapTmp = null;
 		inCreation = false;
@@ -47,10 +57,13 @@ public class TerrainGenerator : MonoBehaviour {
 
 			StartCoroutine(CreateTerrain());
 			StartCoroutine(AddTextures());
+			StartCoroutine(AddTrees());
 		}else if(Input.GetKeyDown(KeyCode.C)){
 			/*float[,] h = new float[1,1];
 			h[0,0] = 50f;
 			tData.SetHeights(Mathf.FloorToInt(pos.x),Mathf.FloorToInt(pos.y),h);*/
+		}else if(Input.GetKeyDown(KeyCode.T)){
+			RenderTrees();
 		}
 	}
 
@@ -86,6 +99,10 @@ public class TerrainGenerator : MonoBehaviour {
 			}
 		}
 		tData.SetAlphamaps(0, 0, map);
+
+		treeInstances = new TreeInstance[0];
+		tData.treeInstances = treeInstances;
+		tData.treePrototypes = new TreePrototype[0];
 	}
 
 	void RefreshTerrainCollider(){
@@ -94,6 +111,7 @@ public class TerrainGenerator : MonoBehaviour {
 	}
 
 	IEnumerator CreateTerrain(){
+
 		if(hMap == null){
 			yield break;
 		}
@@ -180,6 +198,67 @@ public class TerrainGenerator : MonoBehaviour {
 			tData.SetAlphamaps(y, 0, map);
 			yield return new WaitForSeconds(Time.fixedDeltaTime);
 		}
+	}
+
+	IEnumerator AddTrees(){
+		while(inCreation){
+			yield return null;
+		}
+		
+		// Ajout des arbres au Terrain
+		TreePrototype[] treesProto = new TreePrototype[trees.Length]; 
+		
+		for(int i = 0 ; i < trees.Length ; i++){
+			treesProto[i] = new TreePrototype(); 
+			treesProto[i].prefab = trees[i];
+		}
+
+		tData.treePrototypes = treesProto;
+
+		int nbTrees = Random.Range(minTree, maxTree);
+
+		treeInstances = new TreeInstance[nbTrees];
+
+		for(int i = 0 ; i < nbTrees ; i++){
+
+			int xPos = 0;
+			int zPos = 0;
+			int index = 0;
+			do{
+				xPos = Random.Range(0, hMap.width);
+				zPos = Random.Range(0, hMap.height);
+
+				index++;
+			}while(tData.GetHeight (zPos,xPos) > textures[0].maxHeight && index < 1000);
+
+			//float yPos = hMap.GetPixel(xPos + offset, zPos + offset).grayscale * tData.size.y - offset;
+			float yPos = tData.GetHeight (zPos,xPos) - offset;
+			Vector3 position = new Vector3(zPos, yPos, xPos); 
+
+			position = new Vector3(position.x / hMap.width, position.y / tData.size.y, position.z / hMap.height);
+
+			treeInstances[i].position = position;
+			treeInstances[i].widthScale = 1;
+			treeInstances[i].heightScale = 1;
+			treeInstances[i].color = Color.white;
+			treeInstances[i].lightmapColor = Color.white;
+			treeInstances[i].prototypeIndex = Random.Range(0, trees.Length - 1);
+		}
+
+		tData.treeInstances = treeInstances;
+
+		RefreshTerrainCollider();
+	}
+
+	void RenderTrees(){
+		for(int i = 0 ; i < treeInstances.Length ; i++){
+			treeInstances[i].widthScale = 1;
+			treeInstances[i].heightScale = 1;
+		}
+
+		tData.treeInstances = treeInstances;
+
+		RefreshTerrainCollider();
 	}
 
 }
