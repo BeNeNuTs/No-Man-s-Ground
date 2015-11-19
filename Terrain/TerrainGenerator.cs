@@ -3,21 +3,24 @@ using System.Collections;
 
 public class TerrainGenerator : MonoBehaviour {
 	
+	//PUBLIC FIELDS ///////////////////
+	
 	public Texture[] textures;
-	public GameObject[] trees;
-
-	[Range(0,100)]
-	public int minTree;
-	[Range(0,100)]
-	public int maxTree;
+	public Tree trees;
+	public Wind wind;
+	public Water water;
 
 	public Texture2D baseTexture;
+	public Texture2D baseNormalMap;
 	public Texture2D hMap;
-
-	//public Vector2 pos;
-
+	
 	[Range(1,100)]
 	public int height;
+	
+	///////////////////////////////////
+	
+	
+	//PRIVATE FIELDS ///////////////////
 
 	private TerrainData tData;
 	private Texture2D hMapTmp;
@@ -32,6 +35,8 @@ public class TerrainGenerator : MonoBehaviour {
 
 	private const int offset = 3;
 	
+	///////////////////////////////////
+	
 	void Start () {
 
 		tData = this.GetComponent<Terrain>().terrainData;
@@ -44,26 +49,21 @@ public class TerrainGenerator : MonoBehaviour {
 
 		InitTerrain();
 	}
-
-	void Update(){
-	   if(Input.GetKeyDown(KeyCode.B) && !inCreation && hMapTmp != hMap){
+	
+	public void Generate(){
+		if(!inCreation && hMapTmp != hMap){
 			hMapTmp = hMap;
 			inCreation = true;
 
+			InitTerrain();
+
 			//Notify pod
-			NotifyPod();
+			//NotifyPod();
 			//Notify player
 			NotifyPlayer();
 
 			StartCoroutine(CreateTerrain());
 			StartCoroutine(AddTextures());
-			StartCoroutine(AddTrees());
-		}else if(Input.GetKeyDown(KeyCode.C)){
-			/*float[,] h = new float[1,1];
-			h[0,0] = 50f;
-			tData.SetHeights(Mathf.FloorToInt(pos.x),Mathf.FloorToInt(pos.y),h);*/
-		}else if(Input.GetKeyDown(KeyCode.T)){
-			RenderTrees();
 		}
 	}
 
@@ -89,6 +89,9 @@ public class TerrainGenerator : MonoBehaviour {
 		SplatPrototype[] initTexture = new SplatPrototype[1]; 
 		initTexture[0] = new SplatPrototype();
 		initTexture[0].texture = baseTexture;
+		initTexture[0].normalMap = baseNormalMap;
+		initTexture[0].tileSize = new Vector2(2,2);
+
 		tData.splatPrototypes = initTexture;
 
 		//Init alphamap with the base texture
@@ -103,6 +106,9 @@ public class TerrainGenerator : MonoBehaviour {
 		treeInstances = new TreeInstance[0];
 		tData.treeInstances = treeInstances;
 		tData.treePrototypes = new TreePrototype[0];
+
+		water.waterGameobject.SetActive(false);
+		water.waterGameobject.transform.position = new Vector3(water.waterGameobject.transform.position.x, water.minPosY, water.waterGameobject.transform.position.z);
 	}
 
 	void RefreshTerrainCollider(){
@@ -145,6 +151,9 @@ public class TerrainGenerator : MonoBehaviour {
 
 		inCreation = false;
 		canAddTexture = false;
+
+		AddTrees();
+		AddWater();
 	}
 
 	IEnumerator AddTextures(){
@@ -162,7 +171,8 @@ public class TerrainGenerator : MonoBehaviour {
 		for(int i = 0 ; i < textures.Length ; i++){
 			terrainTexture[i] = new SplatPrototype(); 
 			terrainTexture[i].texture = textures[i].texture;
-			
+			terrainTexture[i].normalMap = textures[i].normalMap;
+			terrainTexture[i].tileSize = new Vector2(2,2);
 		}
 		tData.splatPrototypes = terrainTexture;
 
@@ -200,22 +210,19 @@ public class TerrainGenerator : MonoBehaviour {
 		}
 	}
 
-	IEnumerator AddTrees(){
-		while(inCreation){
-			yield return null;
-		}
+	void AddTrees(){
 		
 		// Ajout des arbres au Terrain
-		TreePrototype[] treesProto = new TreePrototype[trees.Length]; 
+		TreePrototype[] treesProto = new TreePrototype[trees.treesGamobject.Length]; 
 		
-		for(int i = 0 ; i < trees.Length ; i++){
+		for(int i = 0 ; i < trees.treesGamobject.Length ; i++){
 			treesProto[i] = new TreePrototype(); 
-			treesProto[i].prefab = trees[i];
+			treesProto[i].prefab = trees.treesGamobject[i];
 		}
 
 		tData.treePrototypes = treesProto;
 
-		int nbTrees = Random.Range(minTree, maxTree);
+		int nbTrees = Random.Range(trees.minTree, trees.maxTree);
 
 		treeInstances = new TreeInstance[nbTrees];
 
@@ -229,36 +236,79 @@ public class TerrainGenerator : MonoBehaviour {
 				zPos = Random.Range(0, hMap.height);
 
 				index++;
-			}while(tData.GetHeight (zPos,xPos) > textures[0].maxHeight && index < 1000);
+			}while((tData.GetHeight (zPos,xPos) < textures[1].minHeight || tData.GetHeight (zPos,xPos) > textures[1].maxHeight) && index < 1000);
 
 			//float yPos = hMap.GetPixel(xPos + offset, zPos + offset).grayscale * tData.size.y - offset;
-			float yPos = tData.GetHeight (zPos,xPos) - offset;
+			float yPos = tData.GetHeight (zPos,xPos);
 			Vector3 position = new Vector3(zPos, yPos, xPos); 
 
 			position = new Vector3(position.x / hMap.width, position.y / tData.size.y, position.z / hMap.height);
 
 			treeInstances[i].position = position;
-			treeInstances[i].widthScale = 1;
-			treeInstances[i].heightScale = 1;
+			treeInstances[i].widthScale = 0;
+			treeInstances[i].heightScale = 0;
 			treeInstances[i].color = Color.white;
 			treeInstances[i].lightmapColor = Color.white;
-			treeInstances[i].prototypeIndex = Random.Range(0, trees.Length - 1);
+			treeInstances[i].prototypeIndex = Random.Range(0, trees.treesGamobject.Length - 1);
 		}
 
-		tData.treeInstances = treeInstances;
+		tData.treeInstances = treeInstances;;
+
+		StartCoroutine(GrowTrees());
+	}
+
+	IEnumerator GrowTrees(){
+		for(int j = 0 ; j < 100 ; j++){
+			for(int i = 0 ; i < treeInstances.Length ; i++){
+				treeInstances[i].widthScale += 0.01f;
+				treeInstances[i].heightScale += 0.01f;
+			}
+			
+			tData.treeInstances = treeInstances;
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
 
 		RefreshTerrainCollider();
 	}
 
-	void RenderTrees(){
-		for(int i = 0 ; i < treeInstances.Length ; i++){
-			treeInstances[i].widthScale = 1;
-			treeInstances[i].heightScale = 1;
+	void AddWater(){
+
+		//Check if water is necessary
+		int cpt = 0;
+		for (int y = 0; y < tData.alphamapHeight; y++) {
+			for (int x = 0; x < tData.alphamapWidth; x++) {
+				if(tData.GetHeight(y,x) < textures[0].maxHeight){
+					cpt++;
+				}
+			}
 		}
 
-		tData.treeInstances = treeInstances;
+		float percentage = ((float)cpt / (float)(tData.alphamapHeight * tData.alphamapWidth));
+		Debug.Log("Pourcentage sable : " + percentage);
+		if(percentage < water.waterProbability){
+			return;
+		}
+		
+		water.waterGameobject.SetActive(true);
 
-		RefreshTerrainCollider();
+		StartCoroutine(RaiseWater());
+	}
+
+	IEnumerator RaiseWater(){
+		float oldPosY = water.waterGameobject.transform.position.y;
+		float newPosY = textures[0].maxHeight + water.offsetY;
+		
+		float posY;
+		float time = 100 * Time.deltaTime;
+		float elapsedTime = 0f;
+		while (elapsedTime < time) {
+			posY = Mathf.Lerp(oldPosY, newPosY, elapsedTime / time);
+			water.waterGameobject.transform.position = new Vector3(water.waterGameobject.transform.position.x, posY, water.waterGameobject.transform.position.z);
+			elapsedTime += Time.deltaTime;
+			yield return new WaitForSeconds(Time.deltaTime);
+		}
+		
+		water.waterGameobject.transform.position = new Vector3(water.waterGameobject.transform.position.x, newPosY, water.waterGameobject.transform.position.z);
 	}
 
 }

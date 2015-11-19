@@ -5,6 +5,8 @@ using System.Collections;
 public class HUDController : MonoBehaviour {
 
 	public TerrainGenerator tGenerator;
+	public Light[] flashLights;
+
 	public Sprite[] Sheightmaps;
 	public Texture2D[] Theightmaps;
 	private int index;
@@ -41,6 +43,11 @@ public class HUDController : MonoBehaviour {
 			}
 			
 			UpdateImg();
+		}else if(Input.GetKeyDown(KeyCode.B)){
+			tGenerator.Generate();
+		}else if(Input.GetKeyDown(KeyCode.L)){
+			flashLights[0].enabled = !flashLights[0].enabled;
+			flashLights[1].enabled = !flashLights[1].enabled;
 		}
 	}
 
