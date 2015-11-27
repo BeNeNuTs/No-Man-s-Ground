@@ -7,6 +7,7 @@ public class TerrainGenerator : MonoBehaviour {
 	
 	public Texture[] textures;
 	public Tree trees;
+	public Grass grass;
 	public Wind wind;
 	public Water water;
 
@@ -81,19 +82,33 @@ public class TerrainGenerator : MonoBehaviour {
 
 	void InitTerrain(){
 
+		InitHeights();
+
+		InitTextures();
+
+		InitTrees();
+
+		InitDetails();
+
+		InitWater();
+	}
+
+	void InitHeights(){
 		//Init heights of Terrain
 		float[,] heights = new float[hMap.width,hMap.height];
 		tData.SetHeights(0,0,heights);
+	}
 
+	void InitTextures(){
 		//Init main texture of Terrain (baseTexture)
 		SplatPrototype[] initTexture = new SplatPrototype[1]; 
 		initTexture[0] = new SplatPrototype();
 		initTexture[0].texture = baseTexture;
 		initTexture[0].normalMap = baseNormalMap;
 		initTexture[0].tileSize = new Vector2(2,2);
-
+		
 		tData.splatPrototypes = initTexture;
-
+		
 		//Init alphamap with the base texture
 		float[,,] map = new float[tData.alphamapWidth, tData.alphamapHeight, tData.alphamapLayers];
 		for (int y = 0; y < tData.alphamapHeight; y++) {
@@ -102,11 +117,20 @@ public class TerrainGenerator : MonoBehaviour {
 			}
 		}
 		tData.SetAlphamaps(0, 0, map);
+	}
 
+	void InitTrees(){
 		treeInstances = new TreeInstance[0];
 		tData.treeInstances = treeInstances;
 		tData.treePrototypes = new TreePrototype[0];
+	}
 
+	void InitDetails(){
+		DetailPrototype[] detailProto = new DetailPrototype[0]; 
+		tData.detailPrototypes = detailProto;
+	}
+
+	void InitWater(){
 		water.waterGameobject.SetActive(false);
 		water.waterGameobject.transform.position = new Vector3(water.waterGameobject.transform.position.x, water.minPosY, water.waterGameobject.transform.position.z);
 	}
@@ -117,7 +141,6 @@ public class TerrainGenerator : MonoBehaviour {
 	}
 
 	IEnumerator CreateTerrain(){
-
 		if(hMap == null){
 			yield break;
 		}
@@ -152,7 +175,9 @@ public class TerrainGenerator : MonoBehaviour {
 		inCreation = false;
 		canAddTexture = false;
 
+		GroundManager.Ground(tData, textures);
 		AddTrees();
+		AddDetails();
 		AddWater();
 	}
 
@@ -211,6 +236,13 @@ public class TerrainGenerator : MonoBehaviour {
 	}
 
 	void AddTrees(){
+		//Check if tree is necessary
+		float percentage = ((float)GroundManager.NB_GRASSHILL / (float)(tData.alphamapHeight * tData.alphamapWidth));
+		Debug.Log("Pourcentage texture herbe : " + percentage);
+		Debug.Log("Nb textures herbes : " + GroundManager.NB_GRASSHILL);
+		if(percentage < trees.treeProbability){
+			return;
+		}
 		
 		// Ajout des arbres au Terrain
 		TreePrototype[] treesProto = new TreePrototype[trees.treesGamobject.Length]; 
@@ -222,7 +254,8 @@ public class TerrainGenerator : MonoBehaviour {
 
 		tData.treePrototypes = treesProto;
 
-		int nbTrees = Random.Range(trees.minTree, trees.maxTree);
+		int nbTrees = Mathf.FloorToInt((Random.Range(trees.minTree, trees.maxTree) / 100f) * GroundManager.NB_GRASSHILL);
+		Debug.Log("NBTREES : " + nbTrees);
 
 		treeInstances = new TreeInstance[nbTrees];
 
@@ -236,7 +269,7 @@ public class TerrainGenerator : MonoBehaviour {
 				zPos = Random.Range(0, hMap.height);
 
 				index++;
-			}while((tData.GetHeight (zPos,xPos) < textures[1].minHeight || tData.GetHeight (zPos,xPos) > textures[1].maxHeight) && index < 1000);
+			}while((tData.GetHeight (zPos,xPos) < textures[Texture.GRASSHILL].minHeight || tData.GetHeight (zPos,xPos) > textures[Texture.GRASSHILL].maxHeight) && index < 1000);
 
 			//float yPos = hMap.GetPixel(xPos + offset, zPos + offset).grayscale * tData.size.y - offset;
 			float yPos = tData.GetHeight (zPos,xPos);
@@ -252,7 +285,7 @@ public class TerrainGenerator : MonoBehaviour {
 			treeInstances[i].prototypeIndex = Random.Range(0, trees.treesGamobject.Length - 1);
 		}
 
-		tData.treeInstances = treeInstances;;
+		tData.treeInstances = treeInstances;
 
 		StartCoroutine(GrowTrees());
 	}
@@ -271,19 +304,67 @@ public class TerrainGenerator : MonoBehaviour {
 		RefreshTerrainCollider();
 	}
 
+	void AddDetails(){
+		//Check if grass is necessary
+		float percentage = ((float)GroundManager.NB_GRASSHILL / (float)(tData.alphamapHeight * tData.alphamapWidth));
+		if(percentage < grass.grassProbability){
+			return;
+		}
+
+		tData.SetDetailResolution(Grass.DETAIL_RESOLUTION,Grass.DETAIL_PER_PATCH);
+
+		//int[,] myMap = tData.GetDetailLayer(0,0,Grass.DETAIL_RESOLUTION,Grass.DETAIL_RESOLUTION,0); 
+		
+		// Ajout d'herbe au Terrain
+		DetailPrototype[] detailProto = new DetailPrototype[grass.grassTextures.Length]; 
+		
+		for(int i = 0 ; i < grass.grassTextures.Length ; i++){
+			detailProto[i] = new DetailPrototype(); 
+			detailProto[i].renderMode = DetailRenderMode.GrassBillboard;
+			detailProto[i].prototypeTexture = grass.grassTextures[i];
+			detailProto[i].minWidth = grass.minWidth;
+			detailProto[i].maxWidth = grass.maxWidth;
+			detailProto[i].minHeight = grass.minHeight;
+			detailProto[i].maxHeight = grass.maxHeight;
+			detailProto[i].noiseSpread = grass.noiseSpread;
+			detailProto[i].dryColor = grass.dryColor;
+			detailProto[i].healthyColor = grass.healthyColor;
+			detailProto[i].usePrototypeMesh = false;
+			detailProto[i].bendFactor = 1f;
+		}
+		
+		tData.detailPrototypes = detailProto;
+		
+		int nbGrass = Mathf.FloorToInt((Random.Range(grass.minGrass, grass.minGrass) / 10f) * GroundManager.NB_GRASSHILL);
+		Debug.Log("NBGRASS : " + nbGrass);
+
+		int[,] detail = new int[Grass.DETAIL_RESOLUTION, Grass.DETAIL_RESOLUTION];
+		for(int i = 0 ; i < nbGrass ; i++){
+
+			int randomX = 0;
+			int randomZ = 0;
+			int index = 0;
+
+			do{
+				randomX = Random.Range(0, hMap.width * 4);
+				randomZ = Random.Range(0, hMap.height * 4);
+				
+				index++;
+			}while((tData.GetHeight (randomZ,randomX) < textures[Texture.GRASSHILL].minHeight || tData.GetHeight (randomZ,randomX) > textures[Texture.GRASSHILL].maxHeight) && index < 1000);
+
+			detail[randomX,randomZ] = 1;
+
+		}
+
+		int randomGrass = Random.Range(0,grass.grassTextures.Length);
+		tData.SetDetailLayer(0, 0, randomGrass, detail);
+
+	}
+
 	void AddWater(){
 
 		//Check if water is necessary
-		int cpt = 0;
-		for (int y = 0; y < tData.alphamapHeight; y++) {
-			for (int x = 0; x < tData.alphamapWidth; x++) {
-				if(tData.GetHeight(y,x) < textures[0].maxHeight){
-					cpt++;
-				}
-			}
-		}
-
-		float percentage = ((float)cpt / (float)(tData.alphamapHeight * tData.alphamapWidth));
+		float percentage = ((float)GroundManager.NB_SAND / (float)(tData.alphamapHeight * tData.alphamapWidth));
 		Debug.Log("Pourcentage sable : " + percentage);
 		if(percentage < water.waterProbability){
 			return;
@@ -296,7 +377,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 	IEnumerator RaiseWater(){
 		float oldPosY = water.waterGameobject.transform.position.y;
-		float newPosY = textures[0].maxHeight + water.offsetY;
+		float newPosY = textures[Texture.SAND].maxHeight + water.offsetY;
 		
 		float posY;
 		float time = 100 * Time.deltaTime;
