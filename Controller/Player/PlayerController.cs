@@ -36,4 +36,10 @@ public class PlayerController : Controller {
 
 		yield return null;
 	}
+
+	public bool isJumping {
+		get{
+			return FPSController.m_Jumping;
+		}
+	}
 }

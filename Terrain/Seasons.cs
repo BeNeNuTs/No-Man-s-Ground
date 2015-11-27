@@ -12,6 +12,7 @@ public class Seasons : MonoBehaviour {
 		public Details details;
 		public Wind wind;
 		public Water water;
+		public Particles particle;
 		
 		public Texture2D baseTexture;
 		public Texture2D baseNormalMap;

@@ -56,22 +56,26 @@ public class TerrainGenerator : MonoBehaviour {
 
 	void Update(){
 		if(Input.GetKey(KeyCode.KeypadEnter) && !inCreation){
-			season.NextSeason();
 			InitTextures();
 			InitTrees();
 			InitDetails();
 			InitWater();
+			InitParticles();
+
+			season.NextSeason();
 
 			canAddTexture = true;
 			StartCoroutine(AddTextures());
 			AddTrees();
 			AddDetails();
 			AddWater();
+		}else if(Input.GetKey(KeyCode.M) && !inCreation){
+			season.seasons[season.CurrentSeason].particle.NextStrengh();
 		}
 	}
 	
 	public void Generate(){
-		if(!inCreation && hMapTmp != hMap){
+		if(!inCreation && hMapTmp != hMap && !player.isJumping){
 			hMapTmp = hMap;
 			inCreation = true;
 
@@ -108,6 +112,8 @@ public class TerrainGenerator : MonoBehaviour {
 		InitDetails();
 
 		InitWater();
+
+		InitParticles();
 	}
 
 	void InitHeights(){
@@ -150,6 +156,10 @@ public class TerrainGenerator : MonoBehaviour {
 	void InitWater(){
 		season.seasons[season.CurrentSeason].water.waterGameobject.SetActive(false);
 		season.seasons[season.CurrentSeason].water.waterGameobject.transform.position = new Vector3(season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.x, season.seasons[season.CurrentSeason].water.minPosY, season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.z);
+	}
+
+	void InitParticles(){
+		season.seasons[season.CurrentSeason].particle.Init();
 	}
 
 	void RefreshTerrainCollider(){
@@ -250,6 +260,8 @@ public class TerrainGenerator : MonoBehaviour {
 			tData.SetAlphamaps(y, 0, map);
 			yield return new WaitForSeconds(Time.fixedDeltaTime);
 		}
+
+		AddParticles();
 	}
 
 	void AddTrees(){
@@ -375,7 +387,6 @@ public class TerrainGenerator : MonoBehaviour {
 		for(int layer = 0 ; layer < season.seasons[season.CurrentSeason].details.grassTextures.Length + season.seasons[season.CurrentSeason].details.bushsMeshes.Length ; layer++){
 
 			int nbDetails = Mathf.FloorToInt((Random.Range(season.seasons[season.CurrentSeason].details.minGrass, season.seasons[season.CurrentSeason].details.maxGrass) / 10f) * GroundManager.NB_GRASSHILL);
-			Debug.Log("NBGRASS : " + nbDetails);
 
 			int[,] detail = new int[Details.DETAIL_RESOLUTION, Details.DETAIL_RESOLUTION];
 			for(int i = 0 ; i < nbDetails ; i++){
@@ -428,6 +439,10 @@ public class TerrainGenerator : MonoBehaviour {
 		}
 		
 		season.seasons[season.CurrentSeason].water.waterGameobject.transform.position = new Vector3(season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.x, newPosY, season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.z);
+	}
+
+	void AddParticles(){
+		season.seasons[season.CurrentSeason].particle.SetStrengh(season.seasons[season.CurrentSeason].particle.strenghParticle);
 	}
 
 }
