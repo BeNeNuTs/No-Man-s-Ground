@@ -2,17 +2,18 @@
 using System.Collections;
 
 [System.Serializable]
-public class Grass {
+public class Details {
 
 	public static int DETAIL_RESOLUTION = 256;//Recommended 128 to 512
 	public static int DETAIL_PER_PATCH = 16;//Recommended 16
 	
 	public Texture2D[] grassTextures;
+	public GameObject[] bushsMeshes;
 	[Range(0,1f)]
 	public float grassProbability;
-	[Range(0,1f)]
+	[Range(0,3f)]
 	public float minGrass;
-	[Range(0,2f)]
+	[Range(0,5f)]
 	public float maxGrass;
 
 	public float minWidth = 1;

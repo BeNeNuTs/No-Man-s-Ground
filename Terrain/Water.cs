@@ -10,6 +10,6 @@ public class Water {
 	public float waterProbability = 0.1f;
 	public float minPosY = -1;
 
-	[Range(0,50)]
+	[Range(0,5)]
 	public float offsetY = 0.5f;
 }

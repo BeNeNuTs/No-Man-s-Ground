@@ -5,4 +5,5 @@ using System.Collections;
 public class Wind {
 	
 	public GameObject windGameobject;
+	public TerrainGenerator tGenerator;
 }
