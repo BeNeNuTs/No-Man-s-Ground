@@ -4,16 +4,6 @@ using System.Collections;
 public class TerrainGenerator : MonoBehaviour {
 	
 	//PUBLIC FIELDS ///////////////////
-	
-	/*public Texture[] textures;
-	public Tree trees;
-	public Details details;
-	public Wind wind;
-	public Water water;
-
-	public Texture2D baseTexture;
-	public Texture2D baseNormalMap;*/
-
 	public Seasons season;
 
 	public Texture2D hMap;
@@ -26,15 +16,14 @@ public class TerrainGenerator : MonoBehaviour {
 	
 	//PRIVATE FIELDS ///////////////////
 
-	private TerrainData tData;
+	[HideInInspector] public TerrainData tData;
 	private Texture2D hMapTmp;
 
 	private TreeInstance[] treeInstances;
 
-	private bool inCreation;
+	public bool inCreation;
 	private bool canAddTexture;
 
-	private PodController pod;
 	private PlayerController player;
 
 	private const int offset = 3;
@@ -48,7 +37,6 @@ public class TerrainGenerator : MonoBehaviour {
 		inCreation = false;
 		canAddTexture = false;
 
-		pod = GameObject.Find("Pod").GetComponent<PodController>();
 		player = GameObject.Find("FPSController").GetComponent<PlayerController>();
 
 		InitTerrain();
@@ -69,13 +57,16 @@ public class TerrainGenerator : MonoBehaviour {
 			AddTrees();
 			AddDetails();
 			AddWater();
-		}else if(Input.GetKey(KeyCode.M) && !inCreation){
+		}else if(Input.GetKeyDown(KeyCode.M) && !inCreation){
 			season.seasons[season.CurrentSeason].particle.NextStrengh();
+			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
+			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
+
 		}
 	}
 	
 	public void Generate(){
-		if(!inCreation && hMapTmp != hMap && !player.isJumping){
+		if(!inCreation && hMapTmp != hMap && player.isGrounded){
 			hMapTmp = hMap;
 			inCreation = true;
 
@@ -87,12 +78,6 @@ public class TerrainGenerator : MonoBehaviour {
 			StartCoroutine(CreateTerrain());
 			StartCoroutine(AddTextures());
 		}
-	}
-
-	void NotifyPod(){
-		Vector3 podPosition = pod.transform.position;
-		float posY = hMap.GetPixel(Mathf.FloorToInt(podPosition.z) + offset, Mathf.FloorToInt(podPosition.x) + offset).grayscale * tData.size.y;
-		StartCoroutine(pod.UpdatePosition(posY));
 	}
 
 	void NotifyPlayer(){
@@ -112,6 +97,8 @@ public class TerrainGenerator : MonoBehaviour {
 		InitDetails();
 
 		InitWater();
+
+		InitWind();
 
 		InitParticles();
 	}
@@ -154,8 +141,13 @@ public class TerrainGenerator : MonoBehaviour {
 	}
 
 	void InitWater(){
-		season.seasons[season.CurrentSeason].water.waterGameobject.SetActive(false);
-		season.seasons[season.CurrentSeason].water.waterGameobject.transform.position = new Vector3(season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.x, season.seasons[season.CurrentSeason].water.minPosY, season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.z);
+		season.water.waterGameobject.SetActive(false);
+		season.water.waterGameobject.transform.position = new Vector3(season.water.waterGameobject.transform.position.x, season.water.minPosY, season.water.waterGameobject.transform.position.z);
+		season.water.Init();
+	}
+
+	void InitWind(){
+		season.wind.Init();
 	}
 
 	void InitParticles(){
@@ -311,7 +303,7 @@ public class TerrainGenerator : MonoBehaviour {
 			treeInstances[i].heightScale = 0;
 			treeInstances[i].color = Color.white;
 			treeInstances[i].lightmapColor = Color.white;
-			treeInstances[i].prototypeIndex = Random.Range(0, season.seasons[season.CurrentSeason].trees.treesGamobject.Length - 1);
+			treeInstances[i].prototypeIndex = Random.Range(0, season.seasons[season.CurrentSeason].trees.treesGamobject.Length);
 		}
 
 		tData.treeInstances = treeInstances;
@@ -343,7 +335,7 @@ public class TerrainGenerator : MonoBehaviour {
 		tData.SetDetailResolution(Details.DETAIL_RESOLUTION,Details.DETAIL_PER_PATCH);
 		
 		// Ajout d'herbe au Terrain
-		DetailPrototype[] detailProto = new DetailPrototype[season.seasons[season.CurrentSeason].details.grassTextures.Length + season.seasons[season.CurrentSeason].details.bushsMeshes.Length]; 
+		DetailPrototype[] detailProto = new DetailPrototype[season.seasons[season.CurrentSeason].details.grassTextures.Length/* + season.seasons[season.CurrentSeason].details.bushsMeshes.Length*/]; 
 
 		int tmp = 0;
 
@@ -366,7 +358,9 @@ public class TerrainGenerator : MonoBehaviour {
 
 		tmp++;
 
-		int j = 0;
+
+		//3D MODELS
+		/*int j = 0;
 		for(int i = tmp ; i < tmp + season.seasons[season.CurrentSeason].details.bushsMeshes.Length ; i++){
 			detailProto[i] = new DetailPrototype(); 
 			detailProto[i].renderMode = DetailRenderMode.Grass;
@@ -380,13 +374,14 @@ public class TerrainGenerator : MonoBehaviour {
 			detailProto[i].healthyColor = season.seasons[season.CurrentSeason].details.healthyColor;
 			detailProto[i].usePrototypeMesh = true;
 			detailProto[i].bendFactor = 1f;
-		}
+		}*/
 
 		tData.detailPrototypes = detailProto;
 
-		for(int layer = 0 ; layer < season.seasons[season.CurrentSeason].details.grassTextures.Length + season.seasons[season.CurrentSeason].details.bushsMeshes.Length ; layer++){
+		for(int layer = 0 ; layer < season.seasons[season.CurrentSeason].details.grassTextures.Length/* + season.seasons[season.CurrentSeason].details.bushsMeshes.Length*/ ; layer++){
 
-			int nbDetails = Mathf.FloorToInt((Random.Range(season.seasons[season.CurrentSeason].details.minGrass, season.seasons[season.CurrentSeason].details.maxGrass) / 10f) * GroundManager.NB_GRASSHILL);
+			//A REMETTRE diviser par 10 si 3d models
+			int nbDetails = Mathf.FloorToInt((Random.Range(season.seasons[season.CurrentSeason].details.minGrass, season.seasons[season.CurrentSeason].details.maxGrass) / 5f) * GroundManager.NB_GRASSHILL);
 
 			int[,] detail = new int[Details.DETAIL_RESOLUTION, Details.DETAIL_RESOLUTION];
 			for(int i = 0 ; i < nbDetails ; i++){
@@ -396,8 +391,8 @@ public class TerrainGenerator : MonoBehaviour {
 				int index = 0;
 
 				do{
-					randomX = Random.Range(0, hMap.width * 4);
-					randomZ = Random.Range(0, hMap.height * 4);
+					randomX = Random.Range(0, hMap.width);
+					randomZ = Random.Range(0, hMap.height);
 					
 					index++;
 				}while((tData.GetHeight (randomZ,randomX) < season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].minHeight || tData.GetHeight (randomZ,randomX) > season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].maxHeight) && index < 1000);
@@ -415,30 +410,30 @@ public class TerrainGenerator : MonoBehaviour {
 		//Check if water is necessary
 		float percentage = ((float)GroundManager.NB_SAND / (float)(tData.alphamapHeight * tData.alphamapWidth));
 		Debug.Log("Pourcentage sable : " + percentage);
-		if(percentage < season.seasons[season.CurrentSeason].water.waterProbability){
+		if(percentage < season.water.waterProbability){
 			return;
 		}
 		
-		season.seasons[season.CurrentSeason].water.waterGameobject.SetActive(true);
+		season.water.waterGameobject.SetActive(true);
 
 		StartCoroutine(RaiseWater());
 	}
 
 	IEnumerator RaiseWater(){
-		float oldPosY = season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.y;
-		float newPosY = season.seasons[season.CurrentSeason].textures[Texture.SAND].maxHeight + season.seasons[season.CurrentSeason].water.offsetY;
+		float oldPosY = season.water.waterGameobject.transform.position.y;
+		float newPosY = season.seasons[season.CurrentSeason].textures[Texture.SAND].maxHeight + season.water.offsetY;
 		
 		float posY;
 		float time = 100 * Time.deltaTime;
 		float elapsedTime = 0f;
 		while (elapsedTime < time) {
 			posY = Mathf.Lerp(oldPosY, newPosY, elapsedTime / time);
-			season.seasons[season.CurrentSeason].water.waterGameobject.transform.position = new Vector3(season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.x, posY, season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.z);
+			season.water.waterGameobject.transform.position = new Vector3(season.water.waterGameobject.transform.position.x, posY, season.water.waterGameobject.transform.position.z);
 			elapsedTime += Time.deltaTime;
 			yield return new WaitForSeconds(Time.deltaTime);
 		}
 		
-		season.seasons[season.CurrentSeason].water.waterGameobject.transform.position = new Vector3(season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.x, newPosY, season.seasons[season.CurrentSeason].water.waterGameobject.transform.position.z);
+		season.water.waterGameobject.transform.position = new Vector3(season.water.waterGameobject.transform.position.x, newPosY, season.water.waterGameobject.transform.position.z);
 	}
 
 	void AddParticles(){
