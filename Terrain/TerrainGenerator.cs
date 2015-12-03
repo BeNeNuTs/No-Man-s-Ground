@@ -480,7 +480,7 @@ public class TerrainGenerator : MonoBehaviour {
 				rocks[i].SetActive(false);
 			}else{
 				rocks[i].transform.SetParent(transform);
-				rocks[i].transform.localPosition = new Vector3(zPos, tData.size.y, xPos );
+				rocks[i].transform.localPosition = new Vector3(zPos, tData.GetHeight (zPos,xPos) + season.rock.offsetY, xPos );
 			}
 		}
 	}

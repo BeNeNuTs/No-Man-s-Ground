@@ -49,8 +49,11 @@ public class PlayerController : Controller {
 	}
 
 	void FixedUpdate(){
-		if(jetpack && !freeze){
+		if(jetpack){
 			FPSController.RotateView();
+		}
+
+		if(jetpack && !freeze){
 			
 			float speed;
 			FPSController.GetInput(out speed);

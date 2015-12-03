@@ -11,6 +11,8 @@ public class Rock {
 	[Range(0,0.5f)]
 	public float maxRock;
 
+	public float offsetY = 1f;
+
 	private GameObject[] rocks = new GameObject[0];
 
 	public void Init(){
