@@ -19,6 +19,7 @@ public class Seasons : MonoBehaviour {
 	public Material skybox;
 	public Wind wind;
 	public Water water;
+	public Rock rock;
 	public Season[] seasons;
 
 	int current_season;

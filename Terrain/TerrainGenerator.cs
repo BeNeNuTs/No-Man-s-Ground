@@ -21,7 +21,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 	private TreeInstance[] treeInstances;
 
-	public bool inCreation;
+	[HideInInspector] public bool inCreation;
 	private bool canAddTexture;
 
 	private PlayerController player;
@@ -47,7 +47,6 @@ public class TerrainGenerator : MonoBehaviour {
 			InitTextures();
 			InitTrees();
 			InitDetails();
-			InitWater();
 			InitParticles();
 
 			season.NextSeason();
@@ -56,12 +55,10 @@ public class TerrainGenerator : MonoBehaviour {
 			StartCoroutine(AddTextures());
 			AddTrees();
 			AddDetails();
-			AddWater();
 		}else if(Input.GetKeyDown(KeyCode.M) && !inCreation){
 			season.seasons[season.CurrentSeason].particle.NextStrengh();
 			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
 			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
-
 		}
 	}
 	
@@ -101,6 +98,8 @@ public class TerrainGenerator : MonoBehaviour {
 		InitWind();
 
 		InitParticles();
+
+		InitRocks();
 	}
 
 	void InitHeights(){
@@ -154,6 +153,10 @@ public class TerrainGenerator : MonoBehaviour {
 		season.seasons[season.CurrentSeason].particle.Init();
 	}
 
+	void InitRocks(){
+		season.rock.Init();
+	}
+
 	void RefreshTerrainCollider(){
 		float[,] terrainHeights = tData.GetHeights (0,0,tData.heightmapWidth, tData.heightmapHeight);
 		tData.SetHeights (0,0, terrainHeights);
@@ -198,6 +201,7 @@ public class TerrainGenerator : MonoBehaviour {
 		AddTrees();
 		AddDetails();
 		AddWater();
+		AddRocks();
 	}
 
 	IEnumerator AddTextures(){
@@ -292,7 +296,11 @@ public class TerrainGenerator : MonoBehaviour {
 				index++;
 			}while((tData.GetHeight (zPos,xPos) < season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].minHeight || tData.GetHeight (zPos,xPos) > season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].maxHeight) && index < 1000);
 
-			//float yPos = hMap.GetPixel(xPos + offset, zPos + offset).grayscale * tData.size.y - offset;
+			if(index >= 1000){
+				i--;
+				continue;
+			}
+
 			float yPos = tData.GetHeight (zPos,xPos);
 			Vector3 position = new Vector3(zPos, yPos, xPos); 
 
@@ -397,7 +405,11 @@ public class TerrainGenerator : MonoBehaviour {
 					index++;
 				}while((tData.GetHeight (randomZ,randomX) < season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].minHeight || tData.GetHeight (randomZ,randomX) > season.seasons[season.CurrentSeason].textures[Texture.GRASSHILL].maxHeight) && index < 1000);
 
-				detail[randomX,randomZ] = 1;
+				if(index >= 1000){
+					detail[randomX,randomZ] = 0;
+				}else{
+					detail[randomX,randomZ] = 1;
+				}
 			}
 
 			tData.SetDetailLayer(0, 0, layer, detail);
@@ -438,6 +450,39 @@ public class TerrainGenerator : MonoBehaviour {
 
 	void AddParticles(){
 		season.seasons[season.CurrentSeason].particle.SetStrengh(season.seasons[season.CurrentSeason].particle.strenghParticle);
+	}
+
+	void AddRocks(){
+		//Check if rocks is necessary
+		float percentage = ((float)GroundManager.NB_MUDROCKY / (float)(tData.alphamapHeight * tData.alphamapWidth));
+		Debug.Log("Pourcentage rocks : " + percentage);
+		if(percentage < season.rock.rockProbability){
+			return;
+		}
+		
+		int nbRocks = Mathf.FloorToInt((Random.Range(season.rock.minRock, season.rock.maxRock) / 100f) * GroundManager.NB_MUDROCKY);
+		Debug.Log("NBROCKS : " + nbRocks);
+		
+		GameObject[] rocks = season.rock.Generate(nbRocks);
+		
+		for(int i = 0 ; i < rocks.Length ; i++){
+			int xPos = 0;
+			int zPos = 0;
+			int index = 0;
+			do{
+				xPos = Random.Range(0, hMap.width);
+				zPos = Random.Range(0, hMap.height);
+				
+				index++;
+			}while((tData.GetHeight (zPos,xPos) < season.seasons[season.CurrentSeason].textures[Texture.MUDROCKY].minHeight || tData.GetHeight (zPos,xPos) > season.seasons[season.CurrentSeason].textures[Texture.MUDROCKY].maxHeight) && index < 1000);
+			
+			if(index >= 1000){
+				rocks[i].SetActive(false);
+			}else{
+				rocks[i].transform.SetParent(transform);
+				rocks[i].transform.localPosition = new Vector3(zPos, tData.size.y, xPos );
+			}
+		}
 	}
 
 }

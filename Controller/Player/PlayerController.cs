@@ -42,7 +42,7 @@ public class PlayerController : Controller {
 			}
 		}
 
-		if (!FPSController.m_Jump)
+		if (!FPSController.m_Jump && jetpack && !freeze)
 		{
 			FPSController.m_Jump = CrossPlatformInputManager.GetButton("Jump");
 		}
