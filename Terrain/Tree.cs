@@ -5,8 +5,10 @@ using System.Collections;
 public class Tree {
 	
 	public GameObject[] treesGamobject;
-	[Range(0,100)]
-	public int minTree;
-	[Range(0,100)]
-	public int maxTree;
+	[Range(0,1f)]
+	public float treeProbability;
+	[Range(0,0.1f)]
+	public float minTree;
+	[Range(0,0.5f)]
+	public float maxTree;
 }

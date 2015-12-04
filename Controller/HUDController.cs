@@ -17,11 +17,16 @@ public class HUDController : MonoBehaviour {
 
 	private bool isShow;
 
+
 	public GameObject HeightMapSelection;
 	public GameObject HUD;
 	public List<GameObject> HUDs;
 
 	int indexHUD;
+
+
+	private float time;
+	private float cooldown = 0.3f;
 
 
 	void Start(){
@@ -38,6 +43,7 @@ public class HUDController : MonoBehaviour {
 	}
 
 	void Update(){
+
 		if (Input.GetKeyDown (KeyCode.A)) 
 		{
 			StartCoroutine(RotateHUD(false,0.5f));
@@ -48,9 +54,11 @@ public class HUDController : MonoBehaviour {
 			StartCoroutine(RotateHUD(true,0.5f));
 		}
 
-		if(Input.GetKeyDown(KeyCode.H)){
+		time += Time.deltaTime;
+
+		if(Input.GetButtonDown("HUD")){
 			ToggleHUD();
-		}else if(isShow && Input.GetKeyDown(KeyCode.LeftArrow)){
+		}else if(isShow && Input.GetAxis("ArrowsH") == -1 && time > cooldown){
 			index--;
 			if(index < 0){
 				index = Sheightmaps.Length - 1;
@@ -58,16 +66,20 @@ public class HUDController : MonoBehaviour {
 
 
 			UpdateImg();
-		}else if(isShow && Input.GetKeyDown(KeyCode.RightArrow)){
+
+			time = 0f;
+		}else if(isShow && Input.GetAxis("ArrowsH") == 1 && time > cooldown){
 			index++;
 			if(index > Sheightmaps.Length - 1){
 				index = 0;
 			}
 
 			UpdateImg();
-		}else if(Input.GetKeyDown(KeyCode.B)){
+
+			time = 0f;
+		}else if(Input.GetButtonDown("Generate")){
 			tGenerator.Generate();
-		}else if(Input.GetKeyDown(KeyCode.L)){
+		}else if(Input.GetButtonDown("Light")){
 			flashLights[0].enabled = !flashLights[0].enabled;
 			flashLights[1].enabled = !flashLights[1].enabled;
 		}
