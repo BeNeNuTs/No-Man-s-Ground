@@ -39,7 +39,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 		player = GameObject.Find("FPSController").GetComponent<PlayerController>();
 
-		InitTerrain();
+		//InitTerrain();
 	}
 
 	void Update(){

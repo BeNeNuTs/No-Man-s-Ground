@@ -16,6 +16,9 @@ public class HUDController : MonoBehaviour {
 
 	private bool isShow;
 
+	private float time;
+	private float cooldown = 0.3f;
+
 	void Start(){
 		index = 0;
 		isShow = false;
@@ -27,25 +30,31 @@ public class HUDController : MonoBehaviour {
 	}
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.H)){
+		time += Time.deltaTime;
+
+		if(Input.GetButtonDown("HUD")){
 			ToggleHUD();
-		}else if(isShow && Input.GetKeyDown(KeyCode.LeftArrow)){
+		}else if(isShow && Input.GetAxis("ArrowsH") == -1 && time > cooldown){
 			index--;
 			if(index < 0){
 				index = Sheightmaps.Length - 1;
 			}
 
 			UpdateImg();
-		}else if(isShow && Input.GetKeyDown(KeyCode.RightArrow)){
+
+			time = 0f;
+		}else if(isShow && Input.GetAxis("ArrowsH") == 1 && time > cooldown){
 			index++;
 			if(index > Sheightmaps.Length - 1){
 				index = 0;
 			}
 			
 			UpdateImg();
-		}else if(Input.GetKeyDown(KeyCode.B)){
+
+			time = 0f;
+		}else if(Input.GetButtonDown("Generate")){
 			tGenerator.Generate();
-		}else if(Input.GetKeyDown(KeyCode.L)){
+		}else if(Input.GetButtonDown("Light")){
 			flashLights[0].enabled = !flashLights[0].enabled;
 			flashLights[1].enabled = !flashLights[1].enabled;
 		}

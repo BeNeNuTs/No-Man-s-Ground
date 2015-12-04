@@ -32,14 +32,12 @@ public class PlayerController : Controller {
 	}
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.J)){
-			if(!jetpack && !tGenerator.inCreation){
-				jetpack = true;
-				FPSController.enabled = false;
-			}else{
-				jetpack = false;
-				FPSController.enabled = true;
-			}
+		if(Input.GetAxis("LT") == 1 && !jetpack && !freeze){
+			jetpack = true;
+			FPSController.enabled = false;
+		}else if(Input.GetAxis("LT") == 0 && jetpack && !freeze){
+			jetpack = false;
+			FPSController.enabled = true;
 		}
 
 		if (!FPSController.m_Jump && jetpack && !freeze)
