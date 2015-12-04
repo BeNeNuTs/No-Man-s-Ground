@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class HUDController : MonoBehaviour {
 
@@ -16,17 +17,37 @@ public class HUDController : MonoBehaviour {
 
 	private bool isShow;
 
+	public GameObject HeightMapSelection;
+	public GameObject HUD;
+	public List<GameObject> HUDs;
+
+	int indexHUD;
+
+
 	void Start(){
+
+		indexHUD = 1;
+
 		index = 0;
 		isShow = false;
 
 		canvas = GetComponent<Canvas>();
-		img = GetComponentInChildren<Image>();
+		img = HeightMapSelection.GetComponentInChildren<Image>();
 
 		UpdateImg();
 	}
 
 	void Update(){
+		if (Input.GetKeyDown (KeyCode.A)) 
+		{
+			StartCoroutine(RotateHUD(false,0.5f));
+		}
+
+		if (Input.GetKeyDown (KeyCode.E)) 
+		{
+			StartCoroutine(RotateHUD(true,0.5f));
+		}
+
 		if(Input.GetKeyDown(KeyCode.H)){
 			ToggleHUD();
 		}else if(isShow && Input.GetKeyDown(KeyCode.LeftArrow)){
@@ -35,13 +56,14 @@ public class HUDController : MonoBehaviour {
 				index = Sheightmaps.Length - 1;
 			}
 
+
 			UpdateImg();
 		}else if(isShow && Input.GetKeyDown(KeyCode.RightArrow)){
 			index++;
 			if(index > Sheightmaps.Length - 1){
 				index = 0;
 			}
-			
+
 			UpdateImg();
 		}else if(Input.GetKeyDown(KeyCode.B)){
 			tGenerator.Generate();
@@ -74,8 +96,44 @@ public class HUDController : MonoBehaviour {
 		ToggleHUD();
 	}
 
+	IEnumerator RotateHUD(bool direction, float time)
+	{
+
+		GameObject player = GameObject.FindGameObjectWithTag ("Player");
+		Vector3 toCurrentHud = HUDs[indexHUD].transform.position - player.transform.position;
+
+		int nextIndex = 0;
+		if (direction)
+			nextIndex = 1;
+		else
+			nextIndex = -1;
+
+		if (indexHUD + nextIndex > 2 || indexHUD + nextIndex < 0) {
+			yield break;
+		} 
+		else 
+		{
+			indexHUD += nextIndex;
+		}
+
+		Vector3 toNextHud = HUDs[indexHUD].transform.position - player.transform.position;
+
+		float angle = Vector3.Angle (toCurrentHud, toNextHud);
+
+		float progression = 0;
+		while (progression < 1.0f) 
+		{
+			yield return new WaitForSeconds(Time.deltaTime);
+			progression += Time.deltaTime/time;
+			float currentAngle = angle*Time.deltaTime/time;
+			HUD.transform.RotateAround(player.transform.position, Camera.main.transform.up, currentAngle*nextIndex*-1);
+		}
+
+	}
+
 	void ToggleHUD(){
-		canvas.enabled = !isShow;
+		HeightMapSelection.SetActive(!isShow);
+
 		isShow = !isShow;
 	}
 
