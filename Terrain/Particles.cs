@@ -24,10 +24,12 @@ public class Particles {
 	}
 
 	public void SetStrengh(Strengh s){
+		strenghParticle = s;
+
 		Init();
 
 		foreach(Particle p in particles){
-			if(p.strengh == s){
+			if(p.strengh == strenghParticle){
 				foreach(GameObject go in p.particles){
 					go.SetActive(true);
 				}
@@ -37,13 +39,11 @@ public class Particles {
 
 	public void NextStrengh(){
 		if(strenghParticle == Strengh.LOW){
-			strenghParticle = Strengh.MEDIUM;
+			SetStrengh(Strengh.MEDIUM);
 		}else if(strenghParticle == Strengh.MEDIUM){
-			strenghParticle = Strengh.HIGH;
+			SetStrengh(Strengh.HIGH);
 		}else if(strenghParticle == Strengh.HIGH){
-			strenghParticle = Strengh.LOW;
+			SetStrengh(Strengh.LOW);
 		}
-
-		SetStrengh(strenghParticle);
 	}
 }

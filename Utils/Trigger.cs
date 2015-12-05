@@ -7,7 +7,7 @@ public class Trigger : MonoBehaviour {
 		if(other.CompareTag("Player")){
 			other.transform.position = new Vector3(127, 60, 127);
 		}else{
-			Destroy(other);
+			Destroy(other.gameObject);
 		}
 	}
 }

@@ -49,6 +49,18 @@ public class Seasons : MonoBehaviour {
 		}
 	}
 
+	public void SetSeason(int current) {
+		current_season = current;
+		
+		if(seasons[current_season].seasonName == "Autumn"){
+			StartCoroutine(ChangeSkyboxColor(new Color(0.35f,0.35f,0.35f, 1f)));
+		}else if(seasons[current_season].seasonName == "Winter"){
+			StartCoroutine(ChangeSkyboxColor(new Color(0f,0f,0f, 1f)));
+		}else{
+			StartCoroutine(ChangeSkyboxColor(new Color(0.5f,0.5f,0.5f, 1f)));
+		}
+	}
+
 	IEnumerator ChangeSkyboxColor(Color color){
 		Color oldColor = skybox.GetColor("_SkyTint");
 		

@@ -18,6 +18,7 @@ public class Wind {
 	}
 
 	public void UpdateWind(Particles.Strengh strengh){
+
 		if(strengh == Particles.Strengh.LOW){
 			Init ();
 		}else if(strengh == Particles.Strengh.MEDIUM){

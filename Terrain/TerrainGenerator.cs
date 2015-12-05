@@ -27,6 +27,8 @@ public class TerrainGenerator : MonoBehaviour {
 	private PlayerController player;
 
 	private const int offset = 3;
+
+	private bool firstCreation = false;
 	
 	///////////////////////////////////
 	
@@ -39,24 +41,41 @@ public class TerrainGenerator : MonoBehaviour {
 
 		player = GameObject.Find("FPSController").GetComponent<PlayerController>();
 
-		//InitTerrain();
+		InitTerrain();
 	}
 
-	void Update(){
-		if(Input.GetKey(KeyCode.KeypadEnter) && !inCreation){
+	public void SetSeason(int current){
+		if(!firstCreation)	return;
+
+		if(!inCreation && current >= 0 && current < season.seasons.Length && current != season.CurrentSeason){
 			InitTextures();
 			InitTrees();
 			InitDetails();
 			InitParticles();
-
-			season.NextSeason();
-
+			InitWind();
+			season.water.Init();
+			
+			season.SetSeason(current);
+			
 			canAddTexture = true;
 			StartCoroutine(AddTextures());
 			AddTrees();
 			AddDetails();
-		}else if(Input.GetKeyDown(KeyCode.M) && !inCreation){
-			season.seasons[season.CurrentSeason].particle.NextStrengh();
+		}
+	}
+
+	public void SetWeather(int current){
+		if(!firstCreation)	return;
+
+		if(!inCreation && current >= 0 && current < 3 && current != (int)season.seasons[season.CurrentSeason].particle.strenghParticle){
+			if(current == 0){
+				season.seasons[season.CurrentSeason].particle.SetStrengh(Particles.Strengh.LOW);
+			}else if(current == 1){
+				season.seasons[season.CurrentSeason].particle.SetStrengh(Particles.Strengh.MEDIUM);
+			}else {
+				season.seasons[season.CurrentSeason].particle.SetStrengh(Particles.Strengh.HIGH);
+			}
+
 			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
 			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
 		}
@@ -150,7 +169,9 @@ public class TerrainGenerator : MonoBehaviour {
 	}
 
 	void InitParticles(){
-		season.seasons[season.CurrentSeason].particle.Init();
+		for(int i = 0 ; i < season.seasons.Length ; i++){
+			season.seasons[i].particle.Init();
+		}
 	}
 
 	void InitRocks(){
@@ -202,6 +223,8 @@ public class TerrainGenerator : MonoBehaviour {
 		AddDetails();
 		AddWater();
 		AddRocks();
+
+		firstCreation = true;
 	}
 
 	IEnumerator AddTextures(){
@@ -263,8 +286,8 @@ public class TerrainGenerator : MonoBehaviour {
 	void AddTrees(){
 		//Check if tree is necessary
 		float percentage = ((float)GroundManager.NB_GRASSHILL / (float)(tData.alphamapHeight * tData.alphamapWidth));
-		Debug.Log("Pourcentage texture herbe : " + percentage);
-		Debug.Log("Nb textures herbes : " + GroundManager.NB_GRASSHILL);
+		//Debug.Log("Pourcentage texture herbe : " + percentage);
+		//Debug.Log("Nb textures herbes : " + GroundManager.NB_GRASSHILL);
 		if(percentage < season.seasons[season.CurrentSeason].trees.treeProbability){
 			return;
 		}
@@ -280,7 +303,7 @@ public class TerrainGenerator : MonoBehaviour {
 		tData.treePrototypes = treesProto;
 
 		int nbTrees = Mathf.FloorToInt((Random.Range(season.seasons[season.CurrentSeason].trees.minTree, season.seasons[season.CurrentSeason].trees.maxTree) / 100f) * GroundManager.NB_GRASSHILL);
-		Debug.Log("NBTREES : " + nbTrees);
+		//Debug.Log("NBTREES : " + nbTrees);
 
 		treeInstances = new TreeInstance[nbTrees];
 
@@ -421,7 +444,7 @@ public class TerrainGenerator : MonoBehaviour {
 
 		//Check if water is necessary
 		float percentage = ((float)GroundManager.NB_SAND / (float)(tData.alphamapHeight * tData.alphamapWidth));
-		Debug.Log("Pourcentage sable : " + percentage);
+		//Debug.Log("Pourcentage sable : " + percentage);
 		if(percentage < season.water.waterProbability){
 			return;
 		}
@@ -455,13 +478,13 @@ public class TerrainGenerator : MonoBehaviour {
 	void AddRocks(){
 		//Check if rocks is necessary
 		float percentage = ((float)GroundManager.NB_MUDROCKY / (float)(tData.alphamapHeight * tData.alphamapWidth));
-		Debug.Log("Pourcentage rocks : " + percentage);
+		//Debug.Log("Pourcentage rocks : " + percentage);
 		if(percentage < season.rock.rockProbability){
 			return;
 		}
 		
 		int nbRocks = Mathf.FloorToInt((Random.Range(season.rock.minRock, season.rock.maxRock) / 100f) * GroundManager.NB_MUDROCKY);
-		Debug.Log("NBROCKS : " + nbRocks);
+		//Debug.Log("NBROCKS : " + nbRocks);
 		
 		GameObject[] rocks = season.rock.Generate(nbRocks);
 		
