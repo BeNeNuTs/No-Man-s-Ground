@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs de l'eau sur le Terrain.
+ */
 [System.Serializable]
 public class Water {
 
@@ -19,12 +22,19 @@ public class Water {
 	[Range(0,5)]
 	public float offsetY = 0.5f;
 
+	/**
+	 * Initialise les variables de la force des vagues
+	 */
 	public void Init(){
 		waterMaterial.SetVector("_GAmplitude", new Vector4(0.14f,0.76f,0.175f,lowAmplitude));
 		waterMaterial.SetVector("_GFrequency", new Vector4(0.5f,0.38f,0.59f,lowFrequency));
 		waterMaterial.SetVector("_GSpeed", new Vector4(-3f,2f,1f,lowSpeed));
 	}
 
+	/**
+	 * Met à jour les variables de la force des vagues en fonction
+	 * de la force des éléments météorologiques.
+	 */
 	public void UpdateWater(Particles.Strengh strengh){
 		if(strengh == Particles.Strengh.LOW){
 			Init();

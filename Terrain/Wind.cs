@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs du vent sur le Terrain.
+ */
 [System.Serializable]
 public class Wind {
 
@@ -9,6 +12,9 @@ public class Wind {
 	public WindZone windZone;
 	public TerrainGenerator tGenerator;
 
+	/**
+	 * Initialise les variables de la force du vent.
+	 */
 	public void Init(){
 		windZone.windMain = lowStrengh;
 		windZone.windPulseMagnitude = lowStrengh;
@@ -17,6 +23,10 @@ public class Wind {
 		tGenerator.tData.wavingGrassStrength = lowStrengh;
 	}
 
+	/**
+	 * Met à jour les variables de la force du vent en fonction
+	 * de la force des éléments météorologiques.
+	 */
 	public void UpdateWind(Particles.Strengh strengh){
 
 		if(strengh == Particles.Strengh.LOW){

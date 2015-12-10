@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs d'un détail sur le Terrain.
+ */
 [System.Serializable]
 public class Details {
 
-	public static int DETAIL_RESOLUTION = 256;//Recommended 128 to 512
-	public static int DETAIL_PER_PATCH = 16;//Recommended 16
+	public static int DETAIL_RESOLUTION = 256;		//Recommended 128 to 512
+	public static int DETAIL_PER_PATCH = 16;		//Recommended 16
 	
 	public Texture2D[] grassTextures;
 	public GameObject[] bushsMeshes;

@@ -2,6 +2,9 @@
 using UnityEngine.UI;
 using System.Collections;
 
+/**
+ * Classe permettant de gérer l'heure de la journée.
+ */
 public class Clock : MonoBehaviour {
 
 	DayNightController controller;
@@ -10,7 +13,10 @@ public class Clock : MonoBehaviour {
 	void Awake() {
 		controller = GetComponent<DayNightController>();
 	}
-	
+
+	/** 
+	 * Met à jour l'heure de la journée.
+	 */
 	void Update() {
 		float currentHour = 24 * controller.currentTimeOfDay;
 		float currentMinute = 60 * (currentHour - Mathf.Floor(currentHour));
@@ -33,7 +39,9 @@ public class Clock : MonoBehaviour {
 		hourText.text = hourString + " : " + minuteString;
 	}
 
-	/** Arrondi un float avec <precision> chiffre après la virgule */
+	/** 
+	 * Arrondi un float avec <precision> chiffre après la virgule
+	 */
 	public static float RoundValue(float num, float precision)
 	{
 		return Mathf.Floor(num * precision + 0.5f) / precision;

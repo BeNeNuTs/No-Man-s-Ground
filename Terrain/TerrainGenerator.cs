@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe permettant de générer tous les éléments du Terrain.
+ */
 public class TerrainGenerator : MonoBehaviour {
 	
 	//PUBLIC FIELDS ///////////////////
@@ -33,7 +36,10 @@ public class TerrainGenerator : MonoBehaviour {
 	private SoundController soundController;
 	
 	///////////////////////////////////
-	
+
+	/**
+	 * Initialise les attributs.
+	 */
 	void Start () {
 
 		tData = this.GetComponent<Terrain>().terrainData;
@@ -47,6 +53,9 @@ public class TerrainGenerator : MonoBehaviour {
 		InitTerrain();
 	}
 
+	/** 
+	 * Change la saison courante par la saison passée en paramètre.
+	 */
 	public void SetSeason(int current){
 		if(!firstCreation)	return;
 
@@ -65,10 +74,13 @@ public class TerrainGenerator : MonoBehaviour {
 			AddTrees();
 			AddDetails();
 
-			soundController.UpdateParameter(season.CurrentSeason, Particles.Strengh.LOW);
+			//soundController.UpdateParameter(season.CurrentSeason, Particles.Strengh.LOW);
 		}
 	}
 
+	/** 
+	 * Change la force des éléments météorologiques par celle passée en paramètre.
+	 */
 	public void SetWeather(int current){
 		if(!firstCreation)	return;
 
@@ -84,10 +96,13 @@ public class TerrainGenerator : MonoBehaviour {
 			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
 			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
 
-			soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
+			//soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
 		}
 	}
-	
+
+	/**
+	 * Génére le Terrain.
+	 */
 	public void Generate(){
 		if(!inCreation && hMapTmp != hMap && player.isGrounded){
 			hMapTmp = hMap;
@@ -103,12 +118,19 @@ public class TerrainGenerator : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Soulève le joueur du sol lors de la génération pour le placer
+	 * à l'endroit où le Terrain se trouvera sous ces pieds.
+	 */
 	void NotifyPlayer(){
 		Vector3 playerPosition = player.transform.position;
 		float posY = hMap.GetPixel(Mathf.FloorToInt(playerPosition.z) + offset, Mathf.FloorToInt(playerPosition.x) + offset).grayscale * tData.size.y;
 		StartCoroutine(player.UpdatePosition(posY));
 	}
 
+	/**
+	 * Initialise tous les éléments du terrains.
+	 */
 	void InitTerrain(){
 
 		InitHeights();
@@ -128,12 +150,18 @@ public class TerrainGenerator : MonoBehaviour {
 		InitRocks();
 	}
 
+	/**
+	 * Initialise les hauteurs du Terrain.
+	 */
 	void InitHeights(){
 		//Init heights of Terrain
 		float[,] heights = new float[hMap.width,hMap.height];
 		tData.SetHeights(0,0,heights);
 	}
 
+	/**
+	 * Initialise les textures du Terrain.
+	 */
 	void InitTextures(){
 		//Init main texture of Terrain (baseTexture)
 		SplatPrototype[] initTexture = new SplatPrototype[1]; 
@@ -154,42 +182,66 @@ public class TerrainGenerator : MonoBehaviour {
 		tData.SetAlphamaps(0, 0, map);
 	}
 
+	/**
+	 * Initialise les arbres du Terrain.
+	 */
 	void InitTrees(){
 		treeInstances = new TreeInstance[0];
 		tData.treeInstances = treeInstances;
 		tData.treePrototypes = new TreePrototype[0];
 	}
 
+	/**
+	 * Initialise les détails du Terrain.
+	 */
 	void InitDetails(){
 		DetailPrototype[] detailProto = new DetailPrototype[0]; 
 		tData.detailPrototypes = detailProto;
 	}
 
+	/**
+	 * Initialise l'eau du Terrain.
+	 */
 	void InitWater(){
 		season.water.waterGameobject.SetActive(false);
 		season.water.waterGameobject.transform.position = new Vector3(season.water.waterGameobject.transform.position.x, season.water.minPosY, season.water.waterGameobject.transform.position.z);
 		season.water.Init();
 	}
 
+	/**
+	 * Initialise la force du vent du Terrain.
+	 */
 	void InitWind(){
 		season.wind.Init();
 	}
 
+	/**
+	 * Initialise les éléments météorologiques du Terrain.
+	 */
 	void InitParticles(){
 		for(int i = 0 ; i < season.seasons.Length ; i++){
 			season.seasons[i].particle.Init();
 		}
 	}
 
+	/**
+	 * Initialise les rochers du Terrain.
+	 */
 	void InitRocks(){
 		season.rock.Init();
 	}
 
+	/**
+	 * Met à jour le collider du Terrain.
+	 */
 	void RefreshTerrainCollider(){
 		float[,] terrainHeights = tData.GetHeights (0,0,tData.heightmapWidth, tData.heightmapHeight);
 		tData.SetHeights (0,0, terrainHeights);
 	}
 
+	/**
+	 * Crée les hauteurs du Terrain et lance les autres méthodes de génération.
+	 */
 	IEnumerator CreateTerrain(){
 		if(hMap == null){
 			yield break;
@@ -234,6 +286,9 @@ public class TerrainGenerator : MonoBehaviour {
 		firstCreation = true;
 	}
 
+	/**
+	 * Ajoute les textures sur le Terrain.
+	 */
 	IEnumerator AddTextures(){
 		if(season.seasons[season.CurrentSeason].textures.Length == 0){
 			yield break;
@@ -290,6 +345,9 @@ public class TerrainGenerator : MonoBehaviour {
 		AddParticles();
 	}
 
+	/**
+	 * Ajoute les arbres sur le Terrain.
+	 */
 	void AddTrees(){
 		//Check if tree is necessary
 		float percentage = ((float)GroundManager.NB_GRASSHILL / (float)(tData.alphamapHeight * tData.alphamapWidth));
@@ -349,6 +407,9 @@ public class TerrainGenerator : MonoBehaviour {
 		StartCoroutine(GrowTrees());
 	}
 
+	/**
+	 * Permet de faire pousser les arbres.
+	 */
 	IEnumerator GrowTrees(){
 		for(int j = 0 ; j < 100 ; j++){
 			for(int i = 0 ; i < treeInstances.Length ; i++){
@@ -363,6 +424,9 @@ public class TerrainGenerator : MonoBehaviour {
 		RefreshTerrainCollider();
 	}
 
+	/**
+	 * Ajoute les détails sur le Terrain.
+	 */
 	void AddDetails(){
 		//Check if grass is necessary
 		float percentage = ((float)GroundManager.NB_GRASSHILL / (float)(tData.alphamapHeight * tData.alphamapWidth));
@@ -447,6 +511,9 @@ public class TerrainGenerator : MonoBehaviour {
 
 	}
 
+	/**
+	 * Ajoute l'eau sur le Terrain.
+	 */
 	void AddWater(){
 
 		//Check if water is necessary
@@ -461,6 +528,9 @@ public class TerrainGenerator : MonoBehaviour {
 		StartCoroutine(RaiseWater());
 	}
 
+	/**
+	 * Fais monter l'eau sur le Terrain.
+	 */
 	IEnumerator RaiseWater(){
 		float oldPosY = season.water.waterGameobject.transform.position.y;
 		float newPosY = season.seasons[season.CurrentSeason].textures[Texture.SAND].maxHeight + season.water.offsetY;
@@ -478,10 +548,16 @@ public class TerrainGenerator : MonoBehaviour {
 		season.water.waterGameobject.transform.position = new Vector3(season.water.waterGameobject.transform.position.x, newPosY, season.water.waterGameobject.transform.position.z);
 	}
 
+	/**
+	 * Ajoute les éléments météorologiques sur le Terrain.
+	 */
 	void AddParticles(){
 		season.seasons[season.CurrentSeason].particle.SetStrengh(season.seasons[season.CurrentSeason].particle.strenghParticle);
 	}
 
+	/**
+	 * Ajoute les rochers sur le Terrain.
+	 */
 	void AddRocks(){
 		//Check if rocks is necessary
 		float percentage = ((float)GroundManager.NB_MUDROCKY / (float)(tData.alphamapHeight * tData.alphamapWidth));

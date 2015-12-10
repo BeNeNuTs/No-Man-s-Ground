@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe permettant de suivre le joueur.
+ */
 public class FollowPlayer : MonoBehaviour {
 	
 	public float offsetY;

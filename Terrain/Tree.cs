@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs des arbres sur le Terrain.
+ */
 [System.Serializable]
 public class Tree {
 	

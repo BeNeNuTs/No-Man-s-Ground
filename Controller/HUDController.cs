@@ -3,8 +3,12 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+/**
+ * Classe permettant de gérer le HUD du joueur.
+ */
 public class HUDController : MonoBehaviour {
 
+	// Définit les différents états du HUD.
 	public enum State { SEASON = 0, HEIGHTMAP = 1, WEATHER = 2 }
 
 	[System.Serializable]
@@ -19,6 +23,8 @@ public class HUDController : MonoBehaviour {
 		public GameObject season;
 		public GameObject[] weathers;
 	}
+
+	//PUBLIC FIELDS ///////////////////
 
 	public TerrainGenerator tGenerator;
 	public Light[] flashLights;
@@ -43,6 +49,8 @@ public class HUDController : MonoBehaviour {
 	public Weather[] weathers;
 	int current_weather = 0;
 
+	//PRIVATE FIELDS ///////////////////
+
 	private int index;
 
 	private int indexHUD;
@@ -58,6 +66,8 @@ public class HUDController : MonoBehaviour {
 
 	private State state = State.HEIGHTMAP;
 
+	///////////////////////////////////
+
 	void Start(){
 
 		indexHUD = 1;
@@ -67,6 +77,9 @@ public class HUDController : MonoBehaviour {
 		UpdateImg();
 	}
 
+	/**
+	 * Gère les inputs pour mettre à jour le HUD.
+	 */
 	void Update(){
 		time += Time.deltaTime;
 		rotateHUDtime += Time.deltaTime;
@@ -157,30 +170,9 @@ public class HUDController : MonoBehaviour {
 		//////////////////////////
 	}
 
-	IEnumerator Coroutine_ToggleHUD(){
-		/*float newFill = 0f;
-		if(!isShow){
-			newFill = 1f;
-		}
-		float oldFill = img.fillAmount;
-		
-		float fill = img.fillAmount;
-		
-		float time = 1f;
-		float elapsedTime = 0f;
-		while (elapsedTime < time) {
-			fill = Mathf.Lerp(oldFill, newFill, elapsedTime / time);
-			img.fillAmount = fill;
-			elapsedTime += Time.deltaTime;
-			yield return null;
-		}
-
-		img.fillAmount = newFill;
-
-		ToggleHUD();*/
-		yield break;
-	}
-
+	/**
+	 * Permet de tourner le HUD du joueur dans les 2 sens.
+	 */
 	IEnumerator RotateHUD(bool direction, float time)
 	{
 		if(state == State.WEATHER && direction){
@@ -236,6 +228,9 @@ public class HUDController : MonoBehaviour {
 		ToggleHUD();
 	}
 
+	/**
+	 * Permet d'afficher/cacher le HUD.
+	 */
 	void ToggleHUD(){
 		if(state == State.SEASON){
 			SeasonSelection.SetActive(!SeasonSelection.activeSelf);
@@ -246,11 +241,17 @@ public class HUDController : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Met à jour l'image de heightmap affichée.
+	 */
 	void UpdateImg(){
 		img.sprite = Sheightmaps[index];
 		tGenerator.hMap = Theightmaps[index];
 	}
 
+	/**
+	 * Met à jour le multiplicateur de temps.
+	 */
 	void UpdateTimeMultiplier(){
 		if(dayNight.dayNightScript.timeMultiplier > 0f){
 			dayNight.timeMultiplierText.enabled = true;
@@ -262,6 +263,9 @@ public class HUDController : MonoBehaviour {
 		hourTime = 0f;
 	}
 
+	/**
+	 * Change l'état du HUD vers le suivant.
+	 */
 	void NextState(){
 		if(state == State.SEASON){
 			SeasonSelection.SetActive(false);
@@ -274,6 +278,9 @@ public class HUDController : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Change l'état du HUD vers le précédent.
+	 */
 	void PreviousState(){
 		if(state == State.WEATHER){
 			WeatherSelection.SetActive(false);
@@ -286,6 +293,9 @@ public class HUDController : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Change la saison affichée vers la suivante.
+	 */
 	void NextSeason(){
 		current_season++;
 		if(current_season > (seasons.Length - 1)){
@@ -294,7 +304,10 @@ public class HUDController : MonoBehaviour {
 
 		UpdateSeasonIcon(current_season);
 	}
-	
+
+	/**
+	 * Change la saison affichée vers la précédente.
+	 */
 	void PreviousSeason(){
 		current_season--;
 		if(current_season < 0){
@@ -304,6 +317,9 @@ public class HUDController : MonoBehaviour {
 		UpdateSeasonIcon(current_season);
 	}
 
+	/**
+	 * Met à jour l'icone de la saison en fonction du paramètre.
+	 */
 	void UpdateSeasonIcon(int current){
 		seasons[current].SetActive(true);
 
@@ -314,6 +330,9 @@ public class HUDController : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Change la météo affichée vers la suivante.
+	 */
 	void NextWeather(){
 		current_weather++;
 		if(current_weather > (weathers[tGenerator.season.CurrentSeason].weathers.Length - 1)){
@@ -322,7 +341,10 @@ public class HUDController : MonoBehaviour {
 		
 		UpdateWeatherIcon(current_weather);
 	}
-	
+
+	/**
+	 * Change la météo affichée vers la précédente.
+	 */
 	void PreviousWeather(){
 		current_weather--;
 		if(current_weather < 0){
@@ -332,6 +354,9 @@ public class HUDController : MonoBehaviour {
 		UpdateWeatherIcon(current_weather);
 	}
 
+	/**
+	 * Initialise l'icone de la météo.
+	 */
 	void InitWeatherIcon(){
 		current_weather = 0;
 		
@@ -343,7 +368,10 @@ public class HUDController : MonoBehaviour {
 			weathers[i].weathers[0].SetActive(true);
 		}
 	}
-	
+
+	/**
+	 * Met à jour l'icone de la météo en fonction du paramètre current.
+	 */
 	void UpdateWeatherIcon(int current){
 		weathers[tGenerator.season.CurrentSeason].season.SetActive(true);
 		weathers[tGenerator.season.CurrentSeason].weathers[current].SetActive(true);

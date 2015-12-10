@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs des rochers sur le Terrain.
+ */
 [System.Serializable]
 public class Rock {
 
@@ -15,12 +18,18 @@ public class Rock {
 
 	private GameObject[] rocks = new GameObject[0];
 
+	/**
+	 * Détruit toutes les instances des rochers
+	 */
 	public void Init(){
 		for(int i = 0 ; i < rocks.Length ; i++){
 			GameObject.Destroy(rocks[i]);
 		}
 	}
 
+	/**
+	 * Génère numberOfRocks rochers et retourne ces instances.
+	 */
 	public GameObject[] Generate(int numberOfRocks){
 		rocks = new GameObject[numberOfRocks];
 		for(int i = 0 ; i < numberOfRocks ; i++){
@@ -31,6 +40,9 @@ public class Rock {
 		return rocks;
 	}
 
+	/**
+	 * Permet d'accéder aux instances de rochers.
+	 */
 	public GameObject[] GetRocks{
 		get{
 			return rocks;

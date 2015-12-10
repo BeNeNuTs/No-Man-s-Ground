@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe permettant de connaitre le pourcentage de chaque éléments
+ * sur le Terrain.
+ */
 public static class GroundManager {
 
 	public static int NB_SAND;
@@ -12,7 +16,9 @@ public static class GroundManager {
 		NB_SAND = NB_GRASSHILL = NB_GRASSROCKY = NB_MUDROCKY = 0;
 	}
 
-
+	/**
+	 * Compte le nombre de chaque éléments en texture sur le Terrain.
+	 */
 	public static void Ground(TerrainData tData, Texture[] textures){
 		Init();
 

@@ -1,9 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les attributs des éléments météorologiques
+ * du Terrain pour chaque saison.
+ */
 [System.Serializable]
 public class Particles {
-	
+
+	/**
+	 * Définit les puissances que peuvent avoir les éléments météorologiques
+	 */
 	public enum Strengh { LOW = 0, MEDIUM = 1, HIGH = 2 };
 	public Strengh strenghParticle = Strengh.LOW;
 
@@ -15,6 +22,9 @@ public class Particles {
 	
 	public Particle[] particles;
 
+	/**
+	 * Permet d'initialiser toutes les particles.
+	 */
 	public void Init(){
 		foreach(Particle p in particles){
 			foreach(GameObject go in p.particles){
@@ -23,6 +33,9 @@ public class Particles {
 		}
 	}
 
+	/**
+	 * Change la force des éléments météorologiques courants
+	 */
 	public void SetStrengh(Strengh s){
 		strenghParticle = s;
 
@@ -37,6 +50,9 @@ public class Particles {
 		}
 	}
 
+	/**
+	 * Augmente la force des éléments météorologiques courants
+	 */
 	public void NextStrengh(){
 		if(strenghParticle == Strengh.LOW){
 			SetStrengh(Strengh.MEDIUM);

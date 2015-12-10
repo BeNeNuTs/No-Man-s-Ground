@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe définissant les différentes saisons.
+ */
 public class Seasons : MonoBehaviour {
 
 	[System.Serializable]
@@ -24,16 +27,25 @@ public class Seasons : MonoBehaviour {
 
 	int current_season;
 
+	/**
+	 * Initialise la saison courante à été.
+	 */
 	void Awake(){
 		current_season = 0;
 	}
 
+	/**
+	 * Permet d'accéder à la saison courante.
+	 */
 	public int CurrentSeason {
 		get{
 			return current_season;
 		}
 	}
 
+	/**
+	 * Change la saison courante par la saison suivante suivant l'ordre.
+	 */
 	public void NextSeason() {
 		current_season++;
 		if(current_season > (seasons.Length - 1)){
@@ -49,6 +61,9 @@ public class Seasons : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Change la saison courante par celle passée en paramètre.
+	 */
 	public void SetSeason(int current) {
 		current_season = current;
 		
@@ -61,6 +76,9 @@ public class Seasons : MonoBehaviour {
 		}
 	}
 
+	/**
+	 * Change la couleur du ciel en fonction de la saison.
+	 */
 	IEnumerator ChangeSkyboxColor(Color color){
 		Color oldColor = skybox.GetColor("_SkyTint");
 		

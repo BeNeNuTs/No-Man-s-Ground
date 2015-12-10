@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Classe permettant de gérer le cycle jour/nuit.
+ */
 public class DayNightController : MonoBehaviour {
 	
 	public Light sun;
@@ -25,7 +28,11 @@ public class DayNightController : MonoBehaviour {
 			currentTimeOfDay = 0;
 		}
 	}
-	
+
+	/**
+	 * Met à jour la position du soleil en fonction de l'heure
+	 * de la journée.
+	 */
 	void UpdateSun() {
 		sun.transform.localRotation = Quaternion.Euler((currentTimeOfDay * 360f) - 90, 170, 0);
 		

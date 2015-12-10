@@ -4,8 +4,12 @@ using System.Collections;
 
 using UnityStandardAssets.Characters.FirstPerson;
 
+/**
+ * Classe permettant de déplacer le joueur 
+ * et d'activer le jetpack.
+ */
 [RequireComponent(typeof (FirstPersonController))]
-public class PlayerController : Controller {
+public class PlayerController : MonoBehaviour {
 
 	public TerrainGenerator tGenerator;
 
@@ -21,6 +25,9 @@ public class PlayerController : Controller {
 	private Vector3 m_MoveDir = Vector3.zero;
 
 	private int maxY = 75;
+
+	private const float offsetY = 1f;
+	private const float gap = 3f;
 
 	// Use this for initialization
 	void Start () {
@@ -78,11 +85,18 @@ public class PlayerController : Controller {
 		}	
 	}
 
+	/**
+	 * Gèle le joueur pour qu'il ne puisse plus
+	 * bouger lors de la génération du Terrain.
+	 */
 	void FreezePlayer(){
 		freeze = true;
 		FPSController.m_WalkSpeed = FPSController.m_RunSpeed = FPSController.m_GravityMultiplier = 0f;
 	}
 
+	/**
+	 * Dégèle le joueur.
+	 */
 	public void UnfreezePlayer(){
 		freeze = false;
 
@@ -91,13 +105,35 @@ public class PlayerController : Controller {
 		FPSController.m_GravityMultiplier = gravity;
 	}
 
-	public override IEnumerator UpdatePosition(float newYPos){
+	/**
+	 * Met à jour la position du joueur
+	 * pour qu'il arrive à l'endroit où le Terrain
+	 * se générera sous ces pieds.
+	 */
+	public IEnumerator UpdatePosition(float newYPos){
 		FreezePlayer();
-		StartCoroutine(base.UpdatePosition(newYPos));
 
-		yield return null;
+		float newYPostion = newYPos + offsetY;
+		float oldYPosition = transform.position.y;
+		
+		float yPosition = transform.position.y;
+		
+		float time = Time.fixedDeltaTime * Mathf.FloorToInt(transform.position.x) * gap;
+		
+		float elapsedTime = 0f;
+		while (elapsedTime < time) {
+			yPosition = Mathf.Lerp(oldYPosition, newYPostion, elapsedTime / time);
+			transform.position = new Vector3(transform.position.x, yPosition, transform.position.z);
+			elapsedTime += Time.deltaTime;
+			yield return null;
+		}
+		
+		transform.position = new Vector3(transform.position.x, newYPostion, transform.position.z);
 	}
 
+	/**
+	 * Permet de savoir si le joueur touche le sol.
+	 */
 	public bool isGrounded {
 		get{
 			return FPSController.m_CharacterController.isGrounded;
