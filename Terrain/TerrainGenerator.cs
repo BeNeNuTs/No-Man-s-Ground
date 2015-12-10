@@ -29,6 +29,8 @@ public class TerrainGenerator : MonoBehaviour {
 	private const int offset = 3;
 
 	private bool firstCreation = false;
+
+	private SoundController soundController;
 	
 	///////////////////////////////////
 	
@@ -39,7 +41,8 @@ public class TerrainGenerator : MonoBehaviour {
 		inCreation = false;
 		canAddTexture = false;
 
-		player = GameObject.Find("FPSController").GetComponent<PlayerController>();
+		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+		soundController = GameObject.FindGameObjectWithTag("Music").GetComponent<SoundController>();
 
 		InitTerrain();
 	}
@@ -61,6 +64,8 @@ public class TerrainGenerator : MonoBehaviour {
 			StartCoroutine(AddTextures());
 			AddTrees();
 			AddDetails();
+
+			soundController.UpdateParameter(season.CurrentSeason, Particles.Strengh.LOW);
 		}
 	}
 
@@ -78,6 +83,8 @@ public class TerrainGenerator : MonoBehaviour {
 
 			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
 			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
+
+			soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
 		}
 	}
 	
