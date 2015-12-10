@@ -26,13 +26,18 @@ public class SoundController : MonoBehaviour {
 	public void UpdateParameter(int season, Particles.Strengh strengh){
 		//Summer || Winter || Spring
 		if(season == 0 || season == 2 || season == 3){
-			ambienceWind.setValue(GetWind(strengh));
-			ambienceRain.setValue(0);
+			float wind = GetWind(strengh);
+			float rain = 0f;
 
+			StopCoroutine("TweenParameter");
+			StartCoroutine(TweenParameter(wind, rain));
 		//Autumn
 		}else if(season == 1){
-			ambienceWind.setValue(GetWind(strengh));
-			ambienceRain.setValue(GetRain(strengh));
+			float wind = GetWind(strengh);
+			float rain = GetRain(strengh);
+
+			StopCoroutine("TweenParameter");
+			StartCoroutine(TweenParameter(wind, rain));
 		}
 	}
 
@@ -68,8 +73,31 @@ public class SoundController : MonoBehaviour {
 		return 0;
 	}
 
-	//TODO
-	IEnumerator TweenParameter(float wind, float rain){
-		yield break;
+	/**
+	 * Permet de changer les paramètres wind et rain progressivement.
+	 */
+	IEnumerator TweenParameter(float newWind, float newRain){
+		StopCoroutine("TweenParameter");
+
+		float oldWind, oldRain;
+		ambienceWind.getValue(out oldWind);
+		ambienceRain.getValue(out oldRain);
+
+		float wind, rain;
+		
+		float elapsedTime = 0f;
+		while (elapsedTime < timeTween) {
+			wind = Mathf.Lerp(oldWind, newWind, elapsedTime / timeTween);
+			rain = Mathf.Lerp(oldRain, newRain, elapsedTime / timeTween);
+
+			ambienceWind.setValue(wind);
+			ambienceRain.setValue(rain);
+
+			elapsedTime += Time.deltaTime;
+			yield return null;
+		}
+		
+		ambienceWind.setValue(newWind);
+		ambienceRain.setValue(newRain);
 	}
 }
