@@ -71,10 +71,11 @@ public class TerrainGenerator : MonoBehaviour {
 			
 			canAddTexture = true;
 			StartCoroutine(AddTextures());
+			AddParticles();
 			AddTrees();
 			AddDetails();
 
-			//soundController.UpdateParameter(season.CurrentSeason, Particles.Strengh.LOW);
+			soundController.UpdateParameter(season.CurrentSeason, Particles.Strengh.LOW);
 		}
 	}
 
@@ -96,7 +97,7 @@ public class TerrainGenerator : MonoBehaviour {
 			season.wind.UpdateWind(season.seasons[season.CurrentSeason].particle.strenghParticle);
 			season.water.UpdateWater(season.seasons[season.CurrentSeason].particle.strenghParticle);
 
-			//soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
+			soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
 		}
 	}
 
@@ -282,8 +283,13 @@ public class TerrainGenerator : MonoBehaviour {
 		AddDetails();
 		AddWater();
 		AddRocks();
+		AddParticles();
 
-		firstCreation = true;
+		if(!firstCreation){
+			soundController.UpdateParameter(season.CurrentSeason, season.seasons[season.CurrentSeason].particle.strenghParticle);
+			firstCreation = true;
+		}
+		
 	}
 
 	/**
@@ -341,8 +347,6 @@ public class TerrainGenerator : MonoBehaviour {
 			tData.SetAlphamaps(y, 0, map);
 			yield return new WaitForSeconds(Time.fixedDeltaTime);
 		}
-
-		AddParticles();
 	}
 
 	/**
