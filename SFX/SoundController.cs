@@ -11,7 +11,7 @@ public class SoundController : MonoBehaviour {
 	FMOD.Studio.ParameterInstance ambienceWind;
 	FMOD.Studio.ParameterInstance ambienceRain;
 
-	float timeTween = 1f;
+	float timeTween = 2f;
 
 	// Use this for initialization
 	void Start () {
@@ -43,8 +43,6 @@ public class SoundController : MonoBehaviour {
 
 			StopCoroutine("TweenParameter");
 			StartCoroutine(TweenParameter(wind, rain));
-			/*ambienceWind.setValue(wind);
-			ambienceRain.setValue(rain);*/
 		//Autumn
 		}else if(season == 1){
 			float wind = GetWind(strengh);
@@ -52,8 +50,6 @@ public class SoundController : MonoBehaviour {
 
 			StopCoroutine("TweenParameter");
 			StartCoroutine(TweenParameter(wind, rain));
-			/*ambienceWind.setValue(wind);
-			ambienceRain.setValue(rain);*/
 		}
 	}
 

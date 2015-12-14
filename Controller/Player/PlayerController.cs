@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour {
 
 	private int maxY = 75;
 
-	private const float offsetY = 1f;
+	private const float offsetY = 2f;
 	private const float gap = 3f;
 
 	// Use this for initialization
